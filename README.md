@@ -8,7 +8,7 @@ property values
 
 ### Demo
 
-Demo [here](http://htmlpreview.github.io/?https://github.com/code-cab/scene/blob/master/demo/index.html)
+Demo [here](https://github.com/code-cab/scene/blob/master/docs/index.html)
 
 ### Setup
 

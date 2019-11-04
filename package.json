@@ -1,0 +1,16 @@
+{
+  "name": "scene",
+  "version": "1.0.0",
+  "author": {
+    "name": "Maarten Krijgsman"
+  },
+  "license": "MIT",
+  "main": "src/scene.js",
+  "scripts": {
+    "livereload": "livereload . -x node_modules/"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "livereload": "^0.8.2"
+  }
+}

@@ -6,10 +6,6 @@ Scene is a simple but powerfull and fast class for creating (CSS) animation and 
 Scene calls a callback for every element when a _property has changed_ so you only have to implement the 
 property values
 
-### Demo
-
-Demo [here](https://github.com/code-cab/scene/blob/master/docs/index.html)
-
 ### Setup
 
 npm install scene

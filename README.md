@@ -1,7 +1,7 @@
-Scene - Backbone for timeline animations and parallax effects
+Scene - JavaScript class for timeline animations and parallax effects
 ===
 
-Scene is a simple but powerfull and fast class for creating (CSS) animation and parallax effects.
+Scene is a simple but powerful and fast class for creating (CSS) animation and parallax effects.
 
 Scene calls a callback for every element when a _property has changed_ so you only have to implement the 
 property values

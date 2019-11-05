@@ -1,11 +1,17 @@
 {
   "name": "scene",
+  "description": "Scene is a simple but powerful and fast class for creating (CSS) animation and parallax effects.",
   "version": "0.10",
   "author": {
     "name": "Maarten Krijgsman"
   },
+  "homepage": "https://github.com/code-cab/scene",
   "license": "MIT",
   "main": "src/scene.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/code-cab/scene.git"
+  },
   "scripts": {
     "livereload": "livereload . -x node_modules/"
   },

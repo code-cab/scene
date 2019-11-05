@@ -14,6 +14,10 @@ function cssCallback(elem) {
             transform += `scale(${props.scalex||1},${props.scaley||1}) `;
         }
         elem.style.transform = transform;
+        for (let prop in props) {
+            if (['x', 'y', 'z', 'rotate', 'scalex', 'scaley', 'scale'].indexOf(prop)>=0) continue;
+            elem.style[prop] = props[prop];
+        }
 
     }
 }
@@ -40,6 +44,14 @@ export default class Scene {
         this._endValue = value;
     }
 
+    set circular(enable) {
+        this._circular = enable;
+    }
+
+    get circular() {
+        return this._circular;
+    }
+
     /**
      *
      * @param id
@@ -51,7 +63,7 @@ export default class Scene {
         let target;
         if (typeof idOrTarget === 'string') {
             id = idOrTarget
-        } else if (idOrTarget instanceof HTMLElement) {
+        } else if (idOrTarget instanceof HTMLElement && !callback) {
             id = `__item_${this._idCount++}__`;
             target = idOrTarget;
             if (!callback) callback = cssCallback(idOrTarget);
@@ -84,7 +96,7 @@ export default class Scene {
         item.steps.sort((a, b) => a.at - b.at);
         item.props = {};
         for (let step of item.steps) {
-            for (let prop in step.props) {
+            for (let prop of Object.keys(step.props)) {
                 item.props[prop] = true;
             }
         }
@@ -106,6 +118,64 @@ export default class Scene {
             throw new Error("Invalid id or target " + idOrTarget);
         }
         return item;
+    }
+
+    smooth(idOrTarget, properties, type) {
+        // Recalculare handle knots
+        let item = this.getItem(idOrTarget);
+        let asymmetric = true;
+        properties = Array.isArray(properties) ? properties : [properties];
+        for (let prop of properties) {
+
+
+            let steps = item.steps.filter(s => s.props[prop] !== undefined);
+            if (steps.length < 3) continue; // Must be at least 3 points
+            for (let step of steps) {
+                step.p1 = step.p1 || {};
+                step.p2 = step.p2 || {};
+            }
+            if (this._circular) {
+                steps.unshift({props: steps[steps.length-1].props, p1: {}, p2: {}});
+                steps.push({props: steps[1].props, p1: {}, p2: {}});
+            }
+            let n = steps.length - 1;
+            let a = [], b = [], c = [], r = [];
+            // Start most point
+            a[0] = 0;
+            b[0] = 2;
+            c[0] = 1;
+            r[0] = steps[0].props[prop] + 2 * steps[1].props[prop];
+            // Mid points
+            for (let i = 1; i < n-1; i++) {
+                a[i] = 1;
+                b[i] = 4;
+                c[i] = 1;
+                r[i] = 4 * steps[i].props[prop] + 2 * steps[i + 1].props[prop];
+            }
+            // End point
+            a[n-1] = 2;
+            b[n-1] = 7;
+            c[n-1] = 0;
+            r[n-1] = 8 * steps[n-1].props[prop] + steps[n].props[prop];
+
+            // Thomas algorithm
+            for (let i = 1; i < n; i++) {
+                let m = a[i] / b[i - 1];
+                b[i] = b[i] - m * c[i-1];
+                r[i] = r[i] - m * r[i-1];
+            }
+            steps[n-1].p1[prop] = r[n-1]/b[n-1];
+            for (let i = n-2; i >= 0; --i) {
+                steps[i].p1[prop] = (r[i] - c[i] * steps[i + 1].p1[prop]) / b[i];
+            }
+
+            for (let i = 0; i <n-1; i++) {
+                steps[i+1].p2[prop] = 2 * steps[i+1].props[prop] - steps[i+1].p1[prop];
+            }
+            steps[n].p2[prop] = 0.5 * (steps[n].props[prop] + steps[n-1].p1[prop]);
+
+        }
+
     }
 
     animate(value) {
@@ -133,6 +203,20 @@ export default class Scene {
                 if (idx < item.steps.length) {
                     nextStep = item.steps[idx];
                 }
+                if (this._circular && !prevStep && nextStep) {
+                    let lastStep;
+                    item.steps.forEach(s => {if (s.props[prop] !== undefined) lastStep = s;});
+                    if (lastStep && lastStep !== nextStep) {
+                        prevStep = lastStep;
+                    }
+                }
+                if (this._circular && !nextStep && prevStep) {
+                    let firstStep = item.steps.find(s => s.props[prop] !== undefined);
+                    if (firstStep && firstStep !== nextStep) {
+                        nextStep = firstStep;
+                    }
+                }
+
                 if (!prevStep && nextStep) {
                     // FirstStep
                     prevStep = {
@@ -148,6 +232,13 @@ export default class Scene {
                 let at1 = prevStep.at || 0;
                 let at2 = nextStep.at;
                 let stepPhase = 1;
+                if (at2 < at1) {
+                    if (value < at1) {
+                        at1 -= this._endValue - this._startValue;
+                    } else {
+                        at2 += this._endValue - this._startValue;
+                    }
+                }
                 if (at1 !== at2) {
                     stepPhase = (value - at1) / (at2 - at1);
                 }
@@ -161,7 +252,7 @@ export default class Scene {
             }
             if (itemChanged) {
                 if (item.callback) {
-                    item.callback(props, id, stepPhases, value);
+                    item.callback(props, stepPhases, value, item.target || item.id);
                 } else if (item.target) {
                     for (let prop in props) {
                         item.target[prop] = props[prop];
@@ -178,11 +269,20 @@ export default class Scene {
             stepPhase = this._timing(stepPhase, nextStep.opts['timing']);
         }
         let v = (v2 - v1) * stepPhase + v1;
+        v = this._smoothValue(prop, v, v1, v2, stepPhase, prevStep, nextStep);
         if (item.valueCallback) {
             let vRet = item.valueCallback(prop, v, stepPhase, v1, v2, phase);
             if (vRet !== undefined) v = vRet;
         }
         return v;
+    }
+
+    _smoothValue(prop, value, v1, v2, stepPhase, prevStep, nextStep) {
+        if (prevStep.p1 === undefined || prevStep.p1[prop] === undefined) return value;
+        if (nextStep.p2 === undefined || nextStep.p2[prop] === undefined) return value;
+        const t = stepPhase;
+        let p0 = v1, p1 = prevStep.p1[prop], p2 = nextStep.p2[prop], p3 = v2;
+        return (1-t)*(1-t)*(1-t)*p0 + 3*(1-t)*(1-t)*t*p1 + 3*(1-t)*t*t*p2 + t*t*t*p3;
     }
 
     _timing(stepPhase, timingFunc) {
@@ -198,6 +298,13 @@ function timing(stepPhase, timingName, params) {
     return fn ? fn(stepPhase, params) : stepPhase;
 }
 
+
+const SMOOTH_TYPE = {
+    internal: { a: 1, b: 4, u: 4, v: 2},
+    asymetric: { a: 1, b: 2, u: 3, v: 0},
+    symetric: { a: 2, b: 7, u: 8, v: 1}
+}
+;
 /**
  * Ease timings from Tweenjs
  * @see https://github.com/CreateJS/TweenJS/blob/master/src/tweenjs/Ease.js

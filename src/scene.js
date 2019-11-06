@@ -93,7 +93,6 @@ export default class Scene {
             props: props,
             opts: opts
         });
-        item.steps.sort((a, b) => a.at - b.at);
         item.props = {};
         for (let step of item.steps) {
             for (let prop of Object.keys(step.props)) {
@@ -187,16 +186,20 @@ export default class Scene {
             let props = {};
             let stepPhases = {};
             let idx;
+            for (let step of item.steps) {
+                step._at = (typeof step.at === 'function') ? step.at() : step.at;
+            }
+            item.steps.sort((a, b) => a._at - b._at);
             for (let prop in item.props) {
                 let prevStep = undefined;
                 let nextStep = undefined;
                 for (idx = 0; idx < item.steps.length; idx += 1) {
                     let step = item.steps[idx];
                     if (step.props[prop] === undefined) continue;
-                    if (value >= step.at) {
+                    if (value >= step._at) {
                         prevStep = step;
                     }
-                    if (value < step.at) {
+                    if (value < step._at) {
                         break;
                     }
                 }
@@ -217,20 +220,21 @@ export default class Scene {
                     }
                 }
 
-                if (!prevStep && nextStep) {
-                    // FirstStep
-                    prevStep = {
-                        at: this.startValue,
-                        props: nextStep.props
-                    }
-                } else if (!nextStep && prevStep) {
-                    nextStep = {
-                        at: this.endValue,
-                        props: prevStep.props
-                    }
-                }
-                let at1 = prevStep.at || 0;
-                let at2 = nextStep.at;
+                if (!prevStep || !nextStep) continue;
+                // if (!prevStep && nextStep) {
+                //     // FirstStep
+                //     prevStep = {
+                //         at: this.startValue,
+                //         props: nextStep.props
+                //     }
+                // } else if (!nextStep && prevStep) {
+                //     nextStep = {
+                //         at: this.endValue,
+                //         props: prevStep.props
+                //     }
+                // }
+                let at1 = prevStep._at || 0;
+                let at2 = nextStep._at;
                 let stepPhase = 1;
                 if (at2 < at1) {
                     if (value < at1) {

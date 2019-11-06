@@ -48,19 +48,19 @@ scene.step('demo', 700, {x: 100});
 scene.smooth('demo', ['x', 'y']);
 `,
 
-    `// Sinus easing
-const scene = new Scene(0, period);
-scene.addItem('demo', demoCallback);
-scene.step('demo', 0, {y: -100});
-scene.step('demo', 500, {y: 100}, {timing: 'sinOut'});
-scene.step('demo', 1000, {y: -100}, {timing: 'sinInOut'});`,
-
 `// Sinus easing
 const scene = new Scene(0, period);
 scene.addItem('demo', demoCallback);
-scene.step('demo', 0, {y: -100});
-scene.step('demo', 500, {y: 100}, {timing: 'powInOut 6'});
-scene.step('demo', 1000, {y: -100}, {timing: 'cubIn'});`,
+scene.step('demo', 0, {x: 0, y: -100});
+scene.step('demo', 500, {y: 100}, {timing: 'sinOut'});
+scene.step('demo', 1000, {x: 0, y: -100}, {timing: 'sinInOut'});`,
+
+`// PowInOut easing
+const scene = new Scene(0, period);
+scene.addItem('demo', demoCallback);
+scene.step('demo', 0, {x: 0, y: -100});
+scene.step('demo', 500, {x: 0, y: 100}, {timing: 'powInOut 6'});
+scene.step('demo', 1000, {x: 0, y: -100}, {timing: 'cubIn'});`,
 
 `// Back easing
 const scene = new Scene(0, period);
@@ -88,6 +88,8 @@ scene.step('demo', 500, {y: 100}, {timing: 'elasticInOut'});
 scene.step('demo', 500, {x: 100}, {timing: 'elasticOut'});
 scene.step('demo', 1000, {y: -100}, {timing: 'elasticIn'});
 scene.step('demo', 1000, {x: -100}, {timing: 'elasticInOut'});`,
+
+
 // `// Events and strings
 // const scene = new Scene(0, period);
 // scene.addItem('demo', 0, {funcProp:val=>console.log('event'), type=''});
@@ -165,9 +167,8 @@ function drawAnimation(script) {
     let scene = eval(`(function(){${script};return scene})();`);
 
     function demoCallback(props) {
-        g.clearRect(0, 0, canvas.width, canvas.height);
-        let x = props.x || 0;
-        let y = props.y || 0;
+        let x = props.x;
+        let y = props.y;
         g.beginPath();
         g.arc(height/2 + paddingV + x/2, height/2 + paddingV - y/2, 3, 0, 2*Math.PI, false);
         g.fillStyle = 'blue';
@@ -175,7 +176,8 @@ function drawAnimation(script) {
     }
 
     animations.push(() => {
-        scene.animate((window.scrollY * period / (document.body.clientHeight - window.innerHeight)) || ((performance.now()/2) % period));
+        g.clearRect(0, 0, canvas.width, canvas.height);
+        scene.animate((performance.now()/2) % period);
     });
     return canvas;
 }
@@ -192,27 +194,29 @@ function addPageParallax() {
         elem.style.top = `${props.top}px`;
     }
 
-    let scene = new Scene(0, 0);
-    let demos = document.getElementById('demos');
-    let i = 0;
-
-    for (let idx = 0; idx < demos.children.length; idx += 1) {
-        let div = demos.children[idx];
-        scene.addItem(div, callback);
-        let height =100;
-
-        scene.step(div, i, {scale: 1, top: 300});
-        scene.step(div, i + 0.2*height, {top: 0, scale: 2});
-        scene.step(div, i + 0.8*height, {top: 0, scale: 2});
-        scene.step(div, i + height, {top: -300, scale: 1});
-        i += height;
-    }
-    scene.endValue = i + window.innerHeight;
-    document.body.style.height = scene.endValue + 'px';
-    scene.animate(0);
-    window.addEventListener('scroll', () => {
-        scene.animate(window.scrollY)
-    });
+    // let demos = document.getElementById('demos');
+    // let height = 500;
+    // let i = 0;
+    // let scene = new Scene(0, demos.children.length * height);
+    // scene.circular = true;
+    //
+    // for (let idx = 0; idx < demos.children.length; idx += 1) {
+    //     let div = demos.children[idx];
+    //     scene.addItem(div, callback);
+    //     let height =1000;
+    //
+    //     scene.step(div, i, {scale: 1, top: i / 20});
+    //     scene.step(div, i + 0.2*height, {top: 0, scale: 2});
+    //     scene.step(div, i + 0.8*height, {top: 0, scale: 2});
+    //     scene.step(div, scene.endValue, {top: i/20, scale: 1});
+    //     i += height;
+    // }
+    // scene.endValue = i + window.innerHeight;
+    // document.body.style.height = scene.endValue + 'px';
+    // scene.animate(0);
+    // window.addEventListener('scroll', () => {
+    //     scene.animate(window.scrollY)
+    // });
 
 }
 // runHelloWorld();

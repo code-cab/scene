@@ -167,6 +167,7 @@ function drawAnimation(script) {
     let scene = eval(`(function(){${script};return scene})();`);
 
     function demoCallback(props) {
+        g.clearRect(0, 0, canvas.width, canvas.height);
         let x = props.x;
         let y = props.y;
         g.beginPath();
@@ -176,7 +177,6 @@ function drawAnimation(script) {
     }
 
     animations.push(() => {
-        g.clearRect(0, 0, canvas.width, canvas.height);
         scene.animate((performance.now()/2) % period);
     });
     return canvas;
@@ -194,29 +194,6 @@ function addPageParallax() {
         elem.style.top = `${props.top}px`;
     }
 
-    // let demos = document.getElementById('demos');
-    // let height = 500;
-    // let i = 0;
-    // let scene = new Scene(0, demos.children.length * height);
-    // scene.circular = true;
-    //
-    // for (let idx = 0; idx < demos.children.length; idx += 1) {
-    //     let div = demos.children[idx];
-    //     scene.addItem(div, callback);
-    //     let height =1000;
-    //
-    //     scene.step(div, i, {scale: 1, top: i / 20});
-    //     scene.step(div, i + 0.2*height, {top: 0, scale: 2});
-    //     scene.step(div, i + 0.8*height, {top: 0, scale: 2});
-    //     scene.step(div, scene.endValue, {top: i/20, scale: 1});
-    //     i += height;
-    // }
-    // scene.endValue = i + window.innerHeight;
-    // document.body.style.height = scene.endValue + 'px';
-    // scene.animate(0);
-    // window.addEventListener('scroll', () => {
-    //     scene.animate(window.scrollY)
-    // });
 
 }
 // runHelloWorld();

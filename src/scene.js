@@ -220,19 +220,21 @@ export default class Scene {
                     }
                 }
 
-                if (!prevStep || !nextStep) continue;
-                // if (!prevStep && nextStep) {
-                //     // FirstStep
-                //     prevStep = {
-                //         at: this.startValue,
-                //         props: nextStep.props
-                //     }
-                // } else if (!nextStep && prevStep) {
-                //     nextStep = {
-                //         at: this.endValue,
-                //         props: prevStep.props
-                //     }
-                // }
+                // if (!prevStep || !nextStep) continue;
+
+                if (!prevStep && nextStep) {
+                    // FirstStep
+                    prevStep = {
+                        _at: this.startValue,
+                        props: nextStep.props
+                    }
+                } else if (!nextStep && prevStep) {
+                    nextStep = {
+                        _at: this.endValue,
+                        props: prevStep.props
+                    }
+                }
+
                 let at1 = prevStep._at || 0;
                 let at2 = nextStep._at;
                 let stepPhase = 1;

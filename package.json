@@ -1,7 +1,7 @@
 {
   "name": "scene",
-  "description": "Scene is a simple but powerful and fast class for creating (CSS) animation and parallax effects.",
-  "version": "0.1.2",
+  "description": "Scene is a simple but powerful property interpolation class for creating (CSS) animation and parallax effects.",
+  "version": "0.1.4",
   "author": {
     "name": "Maarten Krijgsman"
   },
@@ -13,10 +13,9 @@
     "url": "https://github.com/code-cab/scene.git"
   },
   "scripts": {
-    "livereload": "livereload . -x node_modules/"
   },
-  "dependencies": {},
+  "dependencies": {
+  },
   "devDependencies": {
-    "livereload": "^0.8.2"
   }
 }

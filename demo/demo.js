@@ -89,6 +89,14 @@ scene.step('demo', 500, {x: 100}, {timing: 'elasticOut'});
 scene.step('demo', 1000, {y: -100}, {timing: 'elasticIn'});
 scene.step('demo', 1000, {x: -100}, {timing: 'elasticInOut'});`,
 
+`// String
+const scene = new Scene(0, period);
+scene.addItem('demo', demoCallback);
+scene.step('demo', 150, {x: -100, y: 0, className: 'blue'});
+scene.step('demo', 400, {x: 0, y: 0, className: 'red'});
+scene.step('demo', 600, {x: 100, y: 0, className: ''});
+`,
+
 
 // `// Events and strings
 // const scene = new Scene(0, period);
@@ -144,6 +152,7 @@ function drawScene(script) {
     function demoCallback(props, stepPhases, sceneValue) {
         mark(props.x, 'red');
         mark(props.y, 'blue');
+        canvas.className = props.className;
 
         function mark(val, color) {
             if (val !== undefined) {
@@ -167,6 +176,8 @@ function drawAnimation(script) {
     let scene = eval(`(function(){${script};return scene})();`);
 
     function demoCallback(props) {
+        canvas.className = props.className;
+
         g.clearRect(0, 0, canvas.width, canvas.height);
         let x = props.x;
         let y = props.y;

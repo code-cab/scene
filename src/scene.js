@@ -31,6 +31,10 @@ export default class Scene {
         this._idCount = 1;
     }
 
+    get value() {
+        return this._value;
+    }
+
     get startValue() {
         return this._startValue;
     }
@@ -178,6 +182,7 @@ export default class Scene {
     }
 
     animate(value) {
+        this._value = value;
         let phase = (value - this._startValue) / (this._endValue - this._startValue);
         for (let id in this._items) {
             let itemChanged = false;
@@ -271,11 +276,16 @@ export default class Scene {
     _phaseToValue(item, prop, prevStep, nextStep, phase, stepPhase) {
         let v1 = prevStep.props[prop];
         let v2 = nextStep.props[prop];
-        if (nextStep.opts && nextStep.opts['timing']) {
-            stepPhase = this._timing(stepPhase, nextStep.opts['timing']);
+
+        let v = v1;
+        if (typeof v1 === 'number' && typeof v2 === 'number') {
+            if (nextStep.opts && nextStep.opts['timing']) {
+                stepPhase = this._timing(stepPhase, nextStep.opts['timing']);
+            }
+            v = (v2 - v1) * stepPhase + v1;
+            v = this._smoothValue(prop, v, v1, v2, stepPhase, prevStep, nextStep);
         }
-        let v = (v2 - v1) * stepPhase + v1;
-        v = this._smoothValue(prop, v, v1, v2, stepPhase, prevStep, nextStep);
+
         if (item.valueCallback) {
             let vRet = item.valueCallback(prop, v, stepPhase, v1, v2, phase);
             if (vRet !== undefined) v = vRet;

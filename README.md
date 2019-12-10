@@ -18,9 +18,9 @@ import Scene from 'scene';
 
 ## Demo
 
-See https://github.com/code-cab/scene/demo/index.html
+See https://github.com/code-cab/scene/tree/master/demo
 
-![Demo screenshot](https://github.com/code-cab/scene/demo/screenshot.jpg)
+![Demo screenshot](https://github.com/code-cab/scene/raw/master/demo/screenshot.jpg)
 
 ## Basic parallax example
 ```js
